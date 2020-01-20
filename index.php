@@ -27,8 +27,8 @@
  </form>
  <?php
     $host = "<mysersan.database.windows.net>";
-    $user = "<root>";
-    $pass = "<qweQWE123!@#>";
+    $user = "<mysersan>";
+    $pass = "<qqQQ123!@#>";
     $db = "<dicodingdb>";
 
     try {
