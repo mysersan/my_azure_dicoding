@@ -1,185 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" ng-app="myApp">
 <head>
-<meta charset="ISO-8859-1">
-<title>MySersanAzure2</title>
-</head>
-<body onload="searchPics()">
-
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intellipix</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body {
-    background-color:#444;
-    color:#FFF;
-    font-family:tahoma;
-}
-
-input {
-    background-color:#555;
-    border:1px solid #666;
-    color:#fff;
-}
-
-#modal{
-    max-height: calc(100% - 100px);
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display:none;
-    background-color:#555;
-    border:1px solid #666;
-    padding:3px;
-    text-align:center;
-}
-
-#modalimage{
-    max-height: calc(100% - 100px);
-    max-width: 100%;
-}
-
-#controls{
-    background-color:#555;
-    border:1px solid #666;
-    padding:5px;
-}
-
-#gallery span {
-    display:inline-block;
-}
-
-#gallery img {
-    border:1px solid #000;
-    padding:5px;
-    background-color:#fff;
-    margin:3px;
-}
-
-#search {
-    width:45%;
-    float:left;
-}
-
-#upload {
-    width:45%;
-    margin-left:45%;
-}
-</style>
-
-<script type="text/javascript">
-function uploadPics() {
-    var form = document.getElementById('uploader');
-    var message = document.getElementById('uploadmessage');
-	
-    form.enabled = false;
-    message.innerHTML = 'Uploading and Processing...';
-
-    // get file references from the form and then uploads the files
-    var formData = new FormData();
-    var fileSelect = document.getElementById('file-select');
-    var files = fileSelect.files;
-	
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        formData.append('photos', file, file.name);
-    }		
-	
-    // pure AJAX; no jQuery
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'api', true);
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            message.innerHTML = (files.length) + ' file(s) uploaded.';
-            reset();
-        }
-        else {
-            message.innerHTML = 'An error occurred!';
-        }
-        form.reset();
-    };
-    xhr.send(formData);
-}
-	
-function searchPics(search) {
-    var xhr = new XMLHttpRequest();
-    var url = "api"
-	
-    if (search && search != ""){
-        url += "?search=" + search;
+    .ng-cloak { display: none !important; }
+    a img {
+    	cursor: pointer;
     }
-	
-    xhr.open('GET', url, true);
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            htmlStr = "";
-            var images = JSON.parse(xhr.responseText);
-			
-            // create HTML from JSON data and append it to the DOM
-            for (var i = 0; i < images.length; i++) {
-                var image = images[i];
-                htmlStr += "<span class='imgwrapper'><img onclick='showImage(\"" + image.fullUrl + "\", \"" + image.metadata.caption + "\")' src='" + image.url + "' title='" + image.metadata.caption + "' alt='" + image.metadata.caption + "'></span>"
-            }
-			
-            if (htmlStr == "") {
-                htmlStr = "No images found."
-            }
-			
-            var gallery = document.getElementById("gallery");
-            gallery.innerHTML = htmlStr;
-        }
-        else {
-            gallery.innerHTML = 'An error occurred!';
-        }
-    };
-    xhr.send();
-}
+    	.image-modal img {
+    width: 100%;
+    }
+</style>
+</head>
+<body class="ng-cloak">
 
-// resets the search form
-function reset(){
-    document.getElementById('searchTerm').value = "";
-    searchPics();
-}
+<div class="container body-content" ng-controller="mainCtrl as ctrl">
 
-// shows the modal dialog for an image
-function showImage(url, caption){
-    document.getElementById('modalimage').src = url;
-    document.getElementById('modaltext').innerHTML = caption;
-    document.getElementById('modal').style.display = "block";
-}
+    <h1>Intellipix</h1>
 
-// closes the modal dialog
-function closeImage(){
-    document.getElementById('modal').style.display = "none";
-}
-</script>
+    <!-- Panel containing image-upload and search controls -->
+    <div class="well">
+    <form ng-if="!ctrl.analysis.inProgress">
+        <div class="row">
+        <div class="col-md-7">
+            <div class="form-group">
+            <label for="imageFile">Select Image to Analyze:</label>
+            <input type="file" id="imageFile" name="imageFile" on-file-selected="ctrl.imageFileSelected(file)">
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="form-group">
+            <label for="searchText">Search:</label>
+            <div class="input-group">
+                <input type="text" id="searchText" ng-model="ctrl.searchText" class="form-control">
+                <span class="input-group-btn">
+                <button class="btn btn-default" type="button" ng-click="ctrl.clearSearchText()">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                </button>
+                </span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </form>
+    <p ng-if="ctrl.analysis.inProgress">
+        <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
+        Analyzing Image ...
+    </p>
+    </div>
 
-<h1 id="title">MySersanAzure2</h1>
+    <!-- Panel showing error message if upload or image analysis fails -->
+    <div class="alert alert-danger alert-dismissible" role="alert" ng-if="ctrl.analysis.error">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    {{ctrl.analysis.error.message}}
+    </div>
 
-<div id="controls">
-<div id="search">
-<div>Search</div>
-<input type="text" value="" id="searchTerm" placeholder="Enter a search term">
-<input type="button" onclick="searchPics(document.getElementById('searchTerm').value)" value="Search">
-<input type="button" onclick="reset()" value="Reset Search">
+    <!-- Thumbnail images -->
+    <div class="row">
+    <div class="col-sm-12">
+        <a ng-click="ctrl.showImageDetails(img)" ng-repeat="img in ctrl.images | filter:ctrl.imageFilter">
+            <img ng-src="{{img.url}}" width="192" ng-attr-title={{img.metadata.caption}} style="padding-right: 16px; padding-bottom: 16px">
+        </a>
+    </div>
+    </div>
+
+    <!-- Modal window used to show enlarged images -->
+    <div class="modal fade image-modal" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">{{ctrl.current.metadata.caption}}</h4>
+        </div>
+        <div class="modal-body">
+            <img ng-src="{{ctrl.current.fullUrl}}">
+        </div>
+        </div>
+    </div>
+    </div>
 </div>
 
-<div id="upload">
-<form id="uploader" >
-<div id="uploadmessage">Select image to upload:</div>
-<input type="file" name="file-select" id="file-select" multiple>
-<input type="button" value="Upload" onclick="uploadPics()">
-</form>
-</div>
-</div>
-<div id="message"></div>
-
-<div id="gallery">
-</div>
-
-<div id="modal">
-<img src="" id="modalimage">
-<p id="modaltext"></p>
-<input type="button" value="close" onclick="closeImage()">
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.6/angular.min.js"></script>
+<script src="index.js"></script>
 
 </body>
 </html>
+
