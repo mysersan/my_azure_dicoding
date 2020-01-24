@@ -4,8 +4,8 @@ var azureStorage = require('azure-storage');
 var streamifier = require('streamifier');
 var request = require('request');
 
-var portNum = process.env.PORT || 9898;
-var endpoint = 'https://southeastasia.api.cognitive.microsoft.com/vision/v2.0/analyze';
+var portNum = process.env.PORT || 80;
+var endpoint = 'https://southeastasia.api.cognitive.microsoft.com/vision/v2.0';
 
 var app = express();
 var storage = multer.memoryStorage();
