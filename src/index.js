@@ -1,7 +1,7 @@
 (function() {
 
-    function mainController($http) {
-        this.$http = $http;
+    function mainController($https) {
+        this.$https = $https;
         this.analysis = {
             inProgress: false
         };
@@ -39,7 +39,7 @@
             };
             formData = new FormData();
             formData.append('imageFile', file);
-            ctrl.$http
+            ctrl.$https
                 .post('/api/image-upload', formData, {
                     transformRequest: angular.identity,
                     headers: {
@@ -63,7 +63,7 @@
 
         loadImageList: function() {
             var ctrl = this;
-            ctrl.$http.get('/api/images')
+            ctrl.$https.get('/api/images')
                 .then(function(result) {
                     ctrl.images = result.data.entries || [];
                 })
@@ -102,7 +102,7 @@
 
     angular
         .module('myApp', [])
-        .controller('mainCtrl', ['$http', mainController])
+        .controller('mainCtrl', ['$https', mainController])
         .directive('onFileSelected', [fileContentBinderDirective]);
 
 }());
